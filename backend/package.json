@@ -1,0 +1,23 @@
+{
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.17.1",
+    "lodash": "^4.17.15",
+    "mocha": "^6.2.2",
+    "mongodb": "^3.4.1",
+    "mongoose": "^5.8.2",
+    "node-cron": "^2.0.3",
+    "request": "^2.88.0",
+    "request-promise": "^4.2.5"
+  },
+  "name": "wormboard",
+  "version": "1.0.0",
+  "description": "killboard build for wormhole corporations to track wormhole pvp stats",
+  "main": "index.js",
+  "repository": "jita.express",
+  "author": "Alice Aloisia",
+  "license": "MIT",
+  "scripts": {
+    "test": "mocha --timeout 10000"
+  }
+}

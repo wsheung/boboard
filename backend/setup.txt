@@ -1,0 +1,107 @@
+git clone xxxxx
+yarn add express
+yarn add mongodb
+yarn add request
+yarn add cors
+yarn add node-cron
+
+brew update
+brew install mongodb/brew/mongodb-community@4.2
+mkdir -p /data/db
+sudo chown -R `id -un` /data/db
+
+
+
+paste from forum about wormboord
+net isk (isk killed - isk lost)
+isk per active player
+net isk per average corpmembers on killmails
+The website displays that data and can show monthly and yearly aggregates over that data sorted by each column presenting a rank based of the selected sort column. Currently I work on a row that takes all other rows into account and yielding an official score
+Average number of pilots in gangs and the number of active pilots in a
+
+https://redisq.zkillboard.com/listen.php
+https://zkillboard.com/api/w-space/corporationID/98056695/year/2019/month/11/
+https://esi.evetech.net/latest/killmails/80201729/f8ac4aca3dee4568d9a4439a5cbdcea299ed9958/?datasource=tranquility
+
+
+
+DB process:
+add collections
+
+Schema
+1. corps we are currently tracking
+    - corp
+        - name
+        - ticker
+        - corp id
+
+2. KMdump by corp
+    - year
+        - month
+            - Corp
+                - killmails
+
+3. Stats
+    - year
+        - month
+            - Corp
+                - killed // increment
+                - lossed // increment
+                - net killed // diff (dependent)
+                - effective % // figure out how to cal (dependent)
+                - isk killed // zkb number
+                - isk lossed // zkb number
+                - net isk // diff (dependent)
+                - ISK efficency % // isk killed / (isk killed and lost) (dependent)
+                - active pvp // number of distinct pvper
+                - total member // do we need this?
+                - % active pvp (dependent)
+                - net isk/ active pvp (dependent)
+                ? Average fleet size (dependent, need to record size)
+                - net points // net points given by zkb
+                - net points per active pilot
+                
+                Stuff to maintain on the side
+                - list of pilotId with kill (active pvp)
+                - average gang size (numbers on km)
+
+
+KM process process
+Two types
+    a. from history (once during startup)
+    b. from real time
+
+0.1.
+    Find list of active WH corps
+    take last 24 hours of all w space kills
+    do a dfs tree search (recursive)
+        1. read past 7 day kill mail for corp
+        2. find kills in wh and corpid
+        3. if corpid doesn't exist in db, add corpid to active wh pvp corp list
+        4. do this for 2-3 levels of tree height depending on number of corps
+    end
+
+1. From history
+    a. Dating back to 12 months ago
+    b. form api request like this (https://zkillboard.com/api/w-space/corporationID/CORPID/year/2019/month/12/)
+    c. loop through corporationIds and Month to get list of kms
+        1. during loop we call ccp api with kmId and Hash using https://esi.evetech.net/latest/killmails/KMID/hash/?datasource=tranquility
+        2. apply km json to documents
+        3. change aggregates every batch (in hopes that each batch has multiple kms belonging to the same corp in the same fight)
+
+
+2. From Real time
+    a. call https://redisq.zkillboard.com/listen.php on loop
+    a2. check if location is WH (3100xxxx)
+    b. keep calling until you get null
+    c. apply results to kms collection and update stats collection everytime we hit a null stop (batch complete)
+    d. 
+
+
+API endpoints
+
+GETS
+getStats()
+
+
+-------------------------------------
