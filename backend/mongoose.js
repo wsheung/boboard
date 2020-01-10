@@ -32,7 +32,7 @@ app.get('/', function (req, res) {
 // connect to localhost mongoose - change this later
 mongoose.connect('mongodb://localhost:27017/MyDb', { useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false });
 
-cron.schedule('0 * * * *', () => {
+cron.schedule('* */15 * * *', () => {
     getRealTimeKMLoop();
     console.log('running a task every hours');
 });

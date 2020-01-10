@@ -10,14 +10,29 @@ import Paper from '@material-ui/core/Paper';
 
 const useStyles = makeStyles({
     container: {
-        height: '1000vh',
+        height: '100vh',
     },
     root: {
         display: 'flex'
     },
-    table: {
+    tableStickyHeader: {
+        color: '#000000',
+        backgroundColor: '#000000'
     }
 });
+
+const styles = {
+    tableStickyHeader: {
+        backgroundColor: '#000000',
+        color: 'white',
+        fontWeight: 500,
+        fontSize: 15
+    },
+    tableRow: {
+        backgroundColor: '#424242',
+        color: 'white'
+    }
+}
 
 function createRow(corpid, killCount, lossCount, iskKilled, iskLossed, activePVPCount, totalMember, netPoints) {
     const netKill = killCount - lossCount;
@@ -43,34 +58,34 @@ export default function SimpleTable() {
     return (
         <Paper className={classes.root}>
             <TableContainer className={classes.container}>
-                <Table className={classes.table} stickyHeader aria-label="sticky table">
-                    <TableHead>
-                        <TableRow>
-                            <TableCell>Corp</TableCell>
-                            <TableCell align="right">Kill Count</TableCell>
-                            <TableCell align="right">Loss Count</TableCell>
-                            <TableCell align="right">Net Kill Count</TableCell>
-                            <TableCell align="right">Isk Killed (M)</TableCell>
-                            <TableCell align="right">Isk Lossed (M)</TableCell>
-                            <TableCell align="right">Net Isk (M)</TableCell>
-                            <TableCell align="right">Active PVP %</TableCell>
-                            <TableCell align="right">Net Point</TableCell>
+                <Table stickyHeader aria-label="sticky table">
+                    <TableHead style={{ backgroundColor: '#000000' }}>
+                        <TableRow style={{ backgroundColor: '#000000' }}>
+                            <TableCell style={styles.tableStickyHeader}>Corp</TableCell>
+                            <TableCell style={styles.tableStickyHeader} align="right">Kill Count</TableCell>
+                            <TableCell style={styles.tableStickyHeader} align="right">Loss Count</TableCell>
+                            <TableCell style={styles.tableStickyHeader} align="right">Net Kill Count</TableCell>
+                            <TableCell style={styles.tableStickyHeader} align="right">Isk Killed (M)</TableCell>
+                            <TableCell style={styles.tableStickyHeader} align="right">Isk Lossed (M)</TableCell>
+                            <TableCell style={styles.tableStickyHeader} align="right">Net Isk (M)</TableCell>
+                            <TableCell style={styles.tableStickyHeader} align="right">Active PVP %</TableCell>
+                            <TableCell style={styles.tableStickyHeader} align="right">Net Point</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
                         {rows.map(row => (
                             <TableRow key={row.corpid}>
-                                <TableCell component="th" scope="row">
+                                <TableCell style={styles.tableRow} component="th" scope="row">
                                     {row.corpid}
                                 </TableCell>
-                                <TableCell align="right">{row.killCount}</TableCell>
-                                <TableCell align="right">{row.lossCount}</TableCell>
-                                <TableCell align="right">{row.netKill}</TableCell>
-                                <TableCell align="right">{row.iskKilled}</TableCell>
-                                <TableCell align="right">{row.iskLossed}</TableCell>
-                                <TableCell align="right">{row.netIsk}</TableCell>
-                                <TableCell align="right">{row.activePVPRatio} %</TableCell>
-                                <TableCell align="right">{row.netPoints}</TableCell>
+                                <TableCell style={styles.tableRow} align="right">{row.killCount}</TableCell>
+                                <TableCell style={styles.tableRow} align="right">{row.lossCount}</TableCell>
+                                <TableCell style={styles.tableRow} align="right">{row.netKill}</TableCell>
+                                <TableCell style={styles.tableRow} align="right">{row.iskKilled}</TableCell>
+                                <TableCell style={styles.tableRow} align="right">{row.iskLossed}</TableCell>
+                                <TableCell style={styles.tableRow} align="right">{row.netIsk}</TableCell>
+                                <TableCell style={styles.tableRow} align="right">{row.activePVPRatio} %</TableCell>
+                                <TableCell style={styles.tableRow} align="right">{row.netPoints}</TableCell>
                             </TableRow>
                         ))}
                     </TableBody>

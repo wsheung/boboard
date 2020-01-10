@@ -18,6 +18,8 @@
   "author": "Alice Aloisia",
   "license": "MIT",
   "scripts": {
-    "test": "mocha --timeout 10000"
+    "test": "mongod --fork --logpath ./Assets/mongodb.log --port 27017 && mocha --timeout 10000 --exit && yarn kill",
+    "start": "mongod --fork --logpath ./Assets/mongodb.log --port 27017 && node mongoose.js",
+    "kill": "ps ax | grep mongod | grep -v grep | awk '{print \"kill -9 \" $1}' | sh"
   }
 }

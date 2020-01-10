@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { makeStyles } from '@material-ui/core/styles';
+import { makeStyles, withStyles } from '@material-ui/core/styles';
 import AppBar from '@material-ui/core/AppBar';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
@@ -31,6 +31,12 @@ TabPanel.propTypes = {
     value: PropTypes.any.isRequired,
 };
 
+const styles = {
+    tabStyle: {
+        
+    }
+}
+
 function a11yProps(index) {
     return {
         id: `scrollable-auto-tab-${index}`,
@@ -43,8 +49,19 @@ const useStyles = makeStyles(theme => ({
         width: '100%',
         overflowX: 'auto',
         backgroundColor: theme.palette.background.paper,
-    },
+    }
 }));
+
+const StyledTabs = withStyles({
+    indicator: {
+        display: 'flex',
+        justifyContent: 'center',
+        '& > div': {
+            width: '100%',
+            backgroundColor: '#BB86FC',
+        },
+    },
+})(props => <Tabs {...props} style={{ backgroundColor: '#424242' }} variant="scrollable" TabIndicatorProps={{ children: <div /> }} />);
 
 
 export default function MonthTab() {
@@ -59,23 +76,19 @@ export default function MonthTab() {
     return (
         <Paper className={classes.root}>
             <AppBar position="static" color="default">
-                <Tabs
-                    //style={{ maxWidth: '500px' }}
+                <StyledTabs
                     value={value}
                     onChange={handleChange}
-                    indicatorColor="primary"
-                    textColor="primary"
-                    variant="scrollable"
                     scrollButtons="on"
-                    aria-label="scrollable auto tabs example"
+                    aria-label="scrollable on tabs"
                 >
-                    <Tab label="Aug 2019" {...a11yProps(0)} />
-                    <Tab label="Sept 2019" {...a11yProps(1)} />
-                    <Tab label="Oct 2019" {...a11yProps(2)} />
-                    <Tab label="Nov 2019" {...a11yProps(3)} />
-                    <Tab label="Dec 2019" {...a11yProps(4)} />
-                    <Tab label="Jan 2020" {...a11yProps(5)} />
-                </Tabs>
+                    <Tab style={{ color: "white" }} label="Aug 2019" {...a11yProps(0)} />
+                    <Tab style={{ color: "white" }} label="Sept 2019" {...a11yProps(1)} />
+                    <Tab style={{ color: "white" }} label="Oct 2019" {...a11yProps(2)} />
+                    <Tab style={{ color: "white" }} label="Nov 2019" {...a11yProps(3)} />
+                    <Tab style={{ color: "white" }} label="Dec 2019" {...a11yProps(4)} />
+                    <Tab style={{ color: "white" }} label="Jan 2020" {...a11yProps(5)} />
+                </StyledTabs>
             </AppBar>
         </Paper>
     );

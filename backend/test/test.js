@@ -12,8 +12,8 @@ var _ = require('lodash');
 const mon = require('../mongoose.js');
 
 // set up mongoose models
-const Corp = require('../Models/corpModel.js/index.js');
-const corpKMSchema = require('../Models/killmailModel.js/index.js');
+const Corp = require('../Models/corpModel.js');
+const corpKMSchema = require('../Models/killmailModel.js');
 
 
 // set up express
@@ -24,7 +24,7 @@ app.use(bodyParser.urlencoded({
 }));
 
 // use Test DB rather than the usual main db to avoid polluting existing data
-var conn = mongoose.connect('mongodb://localhost:27017/Test', { useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false });
+var conn = mongoose.connect('mongodb://localhost:27017/MyDb', { useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false });
 
 before(function (done) {
     // clearing db first
@@ -39,10 +39,10 @@ before(function (done) {
 describe('Creating corporations', () => {
         it('should create new corporation entries in corporations collection and check if they exist', async () => {
             await Promise.all([
-                mon.addNewCorp('123', 'testing corp test corp1', 'test1'),
-                mon.addNewCorp('234', 'testing corp test corp2', 'test2'),
-                mon.addNewCorp('345', 'testing corp test corp3', 'test3'),
-                mon.addNewCorp('456', 'testing corp test corp4', 'test4')
+                mon.addNewCorp(1, '123', 'testing corp test corp1', 'test1'),
+                mon.addNewCorp(1, '234', 'testing corp test corp2', 'test2'),
+                mon.addNewCorp(1, '345', 'testing corp test corp3', 'test3'),
+                mon.addNewCorp(1, '456', 'testing corp test corp4', 'test4')
             ]);
 
             const result1 = await mon.corpExistInDB('123');
