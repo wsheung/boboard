@@ -18,4 +18,4 @@ var corpSchema = mongoose.Schema({
     }
 }, { collection: 'corporations' });
 
-var corpSchema = module.exports = mongoose.model('corporations', corpSchema);
+var corpSchema = module.exports = mongoose.model('corporation', corpSchema);

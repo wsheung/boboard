@@ -14,6 +14,18 @@ var corpKMSchema = mongoose.Schema({
         type: String,
         required: true,
     },
+    _corpName: {
+        type: String,
+    },
+    _corpTicker: {
+        type: String,
+    },
+    isNPC: {
+        type: Boolean
+    },
+    population: {
+        type: Number
+    },
     killCount: {
         type: Number
     },

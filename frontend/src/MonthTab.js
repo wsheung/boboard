@@ -31,11 +31,6 @@ TabPanel.propTypes = {
     value: PropTypes.any.isRequired,
 };
 
-const styles = {
-    tabStyle: {
-        
-    }
-}
 
 function a11yProps(index) {
     return {
@@ -48,7 +43,10 @@ const useStyles = makeStyles(theme => ({
     root: {
         width: '100%',
         overflowX: 'auto',
-        backgroundColor: theme.palette.background.paper,
+        backgroundColor: 'transparent',
+        borderTopLeftRadius: '2px',
+        borderTopRightRadius: '2px',
+        border: '0px'
     }
 }));
 
@@ -58,36 +56,48 @@ const StyledTabs = withStyles({
         justifyContent: 'center',
         '& > div': {
             width: '100%',
-            backgroundColor: '#BB86FC',
+            backgroundColor: 'white'
         },
     },
-})(props => <Tabs {...props} style={{ backgroundColor: '#424242' }} variant="scrollable" TabIndicatorProps={{ children: <div /> }} />);
+})(props => <Tabs {...props} style={{ background: 'transparent' }} variant="scrollable" TabIndicatorProps={{ children: <div /> }} />);
 
+const MONTHMAPPING = ["NA", "Jan", "Feb", "Mar", "April", "May", "June", "July", "Aug", "Sept", "Oct", "Nov", "Dec"];
+ 
 
-export default function MonthTab() {
+export default function MonthTab(props) {
     const classes = useStyles();
-    const initialTabIndex = 5; // we only display last 6 months of data
+    const tabData = props.tabData; // need to implement sort function
+    const initialTabIndex = tabData.length ? 1 : tabData.length - 1; // we only display last 6 months of data(for now)
     const [value, setValue] = React.useState(initialTabIndex);
+    var index = -1;
 
     const handleChange = (event, newValue) => {
         setValue(newValue);
+        props.callbackFromParent(newValue);
     };
 
     return (
         <Paper className={classes.root}>
-            <AppBar position="static" color="default">
+            <AppBar position="static" style={{ background: 'transparent', boxShadow: 'none' }}>
                 <StyledTabs
                     value={value}
                     onChange={handleChange}
                     scrollButtons="on"
                     aria-label="scrollable on tabs"
                 >
-                    <Tab style={{ color: "white" }} label="Aug 2019" {...a11yProps(0)} />
-                    <Tab style={{ color: "white" }} label="Sept 2019" {...a11yProps(1)} />
-                    <Tab style={{ color: "white" }} label="Oct 2019" {...a11yProps(2)} />
-                    <Tab style={{ color: "white" }} label="Nov 2019" {...a11yProps(3)} />
-                    <Tab style={{ color: "white" }} label="Dec 2019" {...a11yProps(4)} />
-                    <Tab style={{ color: "white" }} label="Jan 2020" {...a11yProps(5)} />
+                    {tabData && tabData.map(tab => {
+                        const tabName = MONTHMAPPING[tab._id._month] + " " + tab._id._year;
+                        index++;
+                        return(
+                            <Tab key={tabName} style={{
+                                borderTopLeftRadius: '15px',
+                                borderTopRightRadius: '15px',
+                                borderRightColor: '#131313',
+                                borderRightWidth: '20px',
+                                backgroundColor: '#191f24',
+                            }} label={tabName} {...a11yProps(index)} />
+                        );
+                    })}
                 </StyledTabs>
             </AppBar>
         </Paper>

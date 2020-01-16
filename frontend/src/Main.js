@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import clsx from 'clsx';
 import { fade, makeStyles, useTheme } from '@material-ui/core/styles';
 import Drawer from '@material-ui/core/Drawer';
@@ -23,8 +23,13 @@ import InputBase from '@material-ui/core/InputBase';
 
 import SimpleTable from './table.js';
 import MonthTab from './MonthTab.js';
+import EnhancedTable from './exampleTableSort.js';
+
+import axios from 'axios';
 
 const drawerWidth = 240;
+
+const TabContext = React.createContext('tab');
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -38,7 +43,7 @@ const useStyles = makeStyles(theme => ({
             easing: theme.transitions.easing.sharp,
             duration: theme.transitions.duration.leavingScreen,
         }),
-        backgroundColor: '#333333'
+        backgroundColor: '#191f24'
     },
     appBarShift: {
         width: `calc(100% - ${drawerWidth}px)`,
@@ -137,10 +142,16 @@ const useStyles = makeStyles(theme => ({
 }));
 
 
+
+
 export default function Main() {
     const classes = useStyles();
     const theme = useTheme();
     const [open, setOpen] = React.useState(false);
+    const [data, setData] = useState([]);
+    const [tabData, setTabData] = useState([]);
+    const [selectedTab, setSelectedTab] = useState(null);
+    const [cache, setCache] = useState(null);
 
     const handleDrawerOpen = () => {
         setOpen(true);
@@ -149,6 +160,50 @@ export default function Main() {
     const handleDrawerClose = () => {
         setOpen(false);
     };
+
+
+    useEffect(() => {
+        async function fetchData(m, y) {
+            const result = await axios(
+                'http://localhost:3001/stats/monthyear',
+                {
+                    params: {
+                        year: y,
+                        month: m
+                    }
+                }
+            );
+            setData(result.data);
+        }
+        async function fetchTabs() {
+            const result = await axios(
+                'http://localhost:3001/stats/timerange',
+            );
+            setTabData(result.data);
+        }
+        if (selectedTab == null) {
+            let today = new Date();
+            let month = today.getUTCMonth() + 1;
+            let year = today.getUTCFullYear();
+            fetchTabs();
+            fetchData(month, year);
+        } else {
+            const year = tabData[selectedTab]._id._year;
+            const month = tabData[selectedTab]._id._month;
+            fetchData(month, year);
+        }
+    }, [tabData, selectedTab]);
+
+
+
+    const myCallBack = (dataFromChild) => {
+        console.log(dataFromChild);
+        changeSelectedTab(dataFromChild);
+    }
+
+    const changeSelectedTab = async (data) => {
+        setSelectedTab(data);
+    }
 
     return (
         <div className={classes.root}>
@@ -169,7 +224,7 @@ export default function Main() {
                     >
                         <MenuIcon />
                     </IconButton>
-                    <Typography className={classes.title} variant="h6" noWrap>
+                    <Typography className={classes.title} variant="h3" noWrap>
                         Wormboard
                     </Typography>
                     <div className={classes.search}>
@@ -229,11 +284,17 @@ export default function Main() {
                 <Grid justify="center" alignItems="flex-start" direction="row" container>
                     <Grid item lg={12} xs={12} sm={12}>
                         <Grid item>
-                        { MonthTab() }
+                            <MonthTab tabData={tabData} callbackFromParent={myCallBack}/>
                         </Grid>
                         <Grid item>
-                        { SimpleTable() }
+                            <EnhancedTable data={data} />
                         </Grid>
+                        {/* <Grid item>
+                            <MonthTab tabData={tabData} callbackFromParent={myCallBack}/>
+                        </Grid>
+                        <Grid item>
+                            <SimpleTable data={data} />
+                        </Grid> */}
                     </Grid>
                 </Grid>
             </main>
