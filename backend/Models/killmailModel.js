@@ -11,7 +11,7 @@ var corpKMSchema = mongoose.Schema({
         required: true,
     },
     _corpid: {
-        type: String,
+        type: Number,
         required: true,
     },
     _corpName: {
@@ -22,9 +22,6 @@ var corpKMSchema = mongoose.Schema({
     },
     isNPC: {
         type: Boolean
-    },
-    population: {
-        type: Number
     },
     killCount: {
         type: Number
@@ -38,7 +35,12 @@ var corpKMSchema = mongoose.Schema({
     iskLossed: {
         type: Number
     },
-    activePVP: [String],
+    activePVP: [Number],
+    processedKMID: [Number],
+    completed: {
+        type: Boolean,
+        default: false
+    },
     totalMember: {
         type: Number
     },

@@ -21,15 +21,13 @@ import MailIcon from '@material-ui/icons/Mail';
 import SearchIcon from '@material-ui/icons/Search';
 import InputBase from '@material-ui/core/InputBase';
 
-import SimpleTable from './table.js';
 import MonthTab from './MonthTab.js';
-import EnhancedTable from './exampleTableSort.js';
+import EnhancedTable from './table';
+import { config } from './config.js';
 
 import axios from 'axios';
 
 const drawerWidth = 240;
-
-const TabContext = React.createContext('tab');
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -151,7 +149,6 @@ export default function Main() {
     const [data, setData] = useState([]);
     const [tabData, setTabData] = useState([]);
     const [selectedTab, setSelectedTab] = useState(null);
-    const [cache, setCache] = useState(null);
 
     const handleDrawerOpen = () => {
         setOpen(true);
@@ -165,7 +162,7 @@ export default function Main() {
     useEffect(() => {
         async function fetchData(m, y) {
             const result = await axios(
-                'http://localhost:3001/stats/monthyear',
+                config.baseUrl + '/stats/monthyear',
                 {
                     params: {
                         year: y,
@@ -177,7 +174,7 @@ export default function Main() {
         }
         async function fetchTabs() {
             const result = await axios(
-                'http://localhost:3001/stats/timerange',
+                config.baseUrl + '/stats/timerange',
             );
             setTabData(result.data);
         }
@@ -197,7 +194,6 @@ export default function Main() {
 
 
     const myCallBack = (dataFromChild) => {
-        console.log(dataFromChild);
         changeSelectedTab(dataFromChild);
     }
 
@@ -289,12 +285,6 @@ export default function Main() {
                         <Grid item>
                             <EnhancedTable data={data} />
                         </Grid>
-                        {/* <Grid item>
-                            <MonthTab tabData={tabData} callbackFromParent={myCallBack}/>
-                        </Grid>
-                        <Grid item>
-                            <SimpleTable data={data} />
-                        </Grid> */}
                     </Grid>
                 </Grid>
             </main>
