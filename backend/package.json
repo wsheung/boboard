@@ -8,6 +8,7 @@
     "mongodb": "^3.4.1",
     "mongoose": "^5.8.2",
     "node-cron": "^2.0.3",
+    "pm2": "^4.2.3",
     "queue": "^6.0.1",
     "request": "^2.88.0",
     "request-promise": "^4.2.5"
@@ -20,12 +21,14 @@
   "author": "wsheung",
   "license": "MIT",
   "scripts": {
-    "test": "mongod --fork --logpath /var/log/mongod.log --port 27017 && mocha --timeout 10000 --exit && yarn kill",
-    "testMacCatalina": "mongod --fork --logpath ./Assets/mongodb.log --port 27017 && mocha --timeout 10000 --exit && yarn kill",
-    "dev": "mongod --fork --logpath /var/log/mongod.log --port 27017 && node -r esm index.js >> ./logs.txt",
+    "test": "mongod --fork --logpath /var/log/mongodb/mongod.log --port 27017 && mocha --timeout 10000 --exit && yarn killMongo",
+    "testMacCatalina": "mongod --fork --logpath ./Assets/mongodb.log --port 27017 && mocha --timeout 10000 --exit && yarn killMac",
+    "dev": "mongod --fork --logpath /var/log/mongodb/mongod.log --port 27017 && node -r esm index.js >> ./logs.txt",
     "devMacCatalina": "mongod --fork --logpath ./Assets/mongodb.log --dbpath /Users/Shared/'Relocated Items'/Security/data/db --port 27017 && node -r esm index.js >> ./logs.txt",
-    "kill": "yarn killMongo && yarn killNode",
-    "killMongo": "ps ax | grep mongod | grep -v grep | awk '{print \"kill -9 \" $1}' | sh",
-    "killNode": "lsof -t -i tcp:3001 | xargs kill"
+    "killMac": "yarn killMacMongo && yarn killNode",
+    "killMacMongo": "ps ax | grep mongod | grep -v grep | awk '{print \"kill -9 \" $1}' | sh",
+    "killNode": "lsof -t -i tcp:3001 | xargs kill",
+    "killMongo": "mongo admin --eval 'db.shutdownServer()'",
+    "startMongo": "mongod --fork --logpath /var/log/mongodb/mongod.log --port 27017"
   }
 }
