@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import clsx from 'clsx';
-import { makeStyles } from '@material-ui/core/styles';
+import { makeStyles, useTheme } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
 import isEqual from 'react-fast-compare';
 
@@ -15,6 +15,8 @@ const drawerWidth = 240;
 const useStyles = makeStyles(theme => ({
     root: {
         display: 'flex',
+        height: '100vh',
+        width: '100vw',
     },
     drawerHeader: {
         display: 'flex',
@@ -44,6 +46,7 @@ const useStyles = makeStyles(theme => ({
 
 const RankingTable = React.memo((props) => {
     const classes = useStyles();
+    const theme = useTheme();
     const [data, setData] = useState([]);
     const [tabData, setTabData] = useState([]);
     const [selectedTab, setSelectedTab] = useState(null);

@@ -19,8 +19,8 @@ import DeleteIcon from '@material-ui/icons/Delete';
 import FilterListIcon from '@material-ui/icons/FilterList';
 
 function createData(_corpid, _corpName, _corpTicker, _allianceid, _alliance, _allianceTicker, _killCount, _lossCount, _iskKilled, _iskLossed, _activePVPCount, _totalMember, _netPoints) {
-  const corpName = _corpName || 0;
-  const corpTicker = _corpTicker || 0;
+  const corpName = _corpName || "";
+  const corpTicker = _corpTicker || "";
   const corpTickerBracket = "[" + corpTicker + "]";
   const allianceTicker = _allianceTicker ? "[" + _allianceTicker + "]" : "";
   const allianceid = _allianceid ? _allianceid : "";
