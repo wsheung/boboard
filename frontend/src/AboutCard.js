@@ -88,7 +88,7 @@ export default function AboutCard(props) {
                             </Typography>
                         </CardContent>
                         <CardActions>
-                            <Button size="small">Github Repo</Button>
+                            <Button component="a" href="https://forums.eveonline.com/t/sad-news-and-wormboard/90489" size="small">Github Repo</Button>
                         </CardActions>
                     </Card>
                 </main>
