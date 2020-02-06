@@ -63,24 +63,24 @@ const StyledTabs = withStyles({
 
 const MONTHMAPPING = ["NA", "Jan", "Feb", "Mar", "April", "May", "June", "July", "Aug", "Sept", "Oct", "Nov", "Dec"];
  
-
-export default function MonthTab(props) {
+const MonthTab = React.memo((props) => {
     const classes = useStyles();
     const tabData = props.tabData; // need to implement sort function
-    const initialTabIndex = tabData.length ? 1 : tabData.length - 1; // we only display last 6 months of data(for now)
-    const [value, setValue] = React.useState(initialTabIndex);
+    const selectedTab = props.selectedTab;
+    console.log("value use state is : " + selectedTab);
     var index = -1;
 
     const handleChange = (event, newValue) => {
-        setValue(newValue);
-        props.callbackFromParent(newValue);
+        if (selectedTab !== newValue) {
+            props.callbackFromParent(newValue);
+        }
     };
 
     return (
         <Paper className={classes.root}>
             <AppBar position="static" style={{ background: 'transparent', boxShadow: 'none' }}>
                 <StyledTabs
-                    value={value}
+                    value={selectedTab == null ? 0 : selectedTab}
                     onChange={handleChange}
                     scrollButtons="on"
                     aria-label="scrollable on tabs"
@@ -102,4 +102,7 @@ export default function MonthTab(props) {
             </AppBar>
         </Paper>
     );
-}
+});
+//MonthTab.whyDidYouRender = true;
+
+export default MonthTab;

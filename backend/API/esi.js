@@ -44,6 +44,25 @@ export async function getCorpInfo(corpId) {
         });
 }
 
+export async function getAllianceInfo(allianceId) {
+    var url = 'https://esi.evetech.net/latest/alliances/' + allianceId + '/?datasource=tranquility';
+    var options = {
+        method: 'GET',
+        uri: url,
+        json: true
+    };
+
+    return rp(options)
+        .then(response => {
+            return response;
+        })
+        .catch(err => {
+            console.log('Error in fetching alliance info for alliance id ' + allianceId);
+            console.log(err);
+            return err;
+        });
+}
+
 export async function getFactionInfo(factionId) {
     var url = 'https://esi.evetech.net/latest/universe/factions/?datasource=tranquility&language=en-us';
     var options = {

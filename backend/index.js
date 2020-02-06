@@ -12,7 +12,8 @@ import {
 import {
     getKillMailCCP,
     getCorpInfo,
-    getFactionInfo
+    getFactionInfo,
+    getAllianceInfo
 } from './API/esi';
 
 import {
@@ -65,8 +66,8 @@ var historicalQueue = [];
 
 // cron job for real time km feed
 cron.schedule('*/15 * * * *', async () => {
-    console.log('running a task every 1/4 hour');
     if (!runningHistoricalKMFetch) {
+        console.log('running a fetch task every 1/4 hour');
         // if we are still fetching, give us a break
         await getRealTimeKM();
     } else {
@@ -103,6 +104,13 @@ async function processGlobalHistoricalQueue() {
     runningHistoricalKMFetch = true;
     _.union(historicalQueue, historicalQueue); // removing duplicates in case of any
     while (historicalQueue.length > 0) {
+        var d = new Date(); // get curren time
+        var m = d.getMinutes();
+        var h = d.getHours();
+        if ((m > 12 && m < 15) || (m > 27 && m < 30) || (m > 42 && m < 45) || (m > 57 && m < 60)) {
+            console.log("stop fetching history so we can fetch real time");
+            break;
+        }
         // if there is remaining unprocessed stuff
         const corpid = historicalQueue[0];
         await getHistoricalData(corpid);
@@ -167,8 +175,8 @@ async function fetchMonthKMForCorp(corpid, month, year) {
 async function getHistoricalData(corpid) {
     var date = new Date();
 
-    // we want to get the past 1 months for now (testing)
-    for (var i = 0; i < 2; i++) {
+    // we want to get the past 3 months for now
+    for (var i = 0; i < 6; i++) {
         var year = date.getUTCFullYear();
         var month = date.getUTCMonth() + 1;
 
@@ -216,11 +224,11 @@ async function processRealTimeBatch(listOfKMs, recursiveOn) {
         if (attackers != null) {
             // this following logic is used to account active PVP (Might make sense to refactor this into addKillToCorpStats() ???)
             attackers.forEach(attacker => {
-                if (attacker.corporation_id != null) {
+                if ("corporation_id" in attacker) {
                     if (!corpMapPilots.has(attacker.corporation_id)) {
                         // if corp isn't accounted for yet, we push array in as value
                         var killer = [];
-                        if (attacker.character_id != null) {
+                        if ("character_id" in attacker) {
                             killer.push(attacker.character_id);
                             if (!attacker.corporation_id.toString().startsWith('1000')) {
                                 // append corp id for historical fetching needs later
@@ -241,7 +249,7 @@ async function processRealTimeBatch(listOfKMs, recursiveOn) {
                     } else {
                         // if corp exist on previous processed attackers, we append the pilot id
                         var newKillerList;
-                        if (attacker.character_id != null) {
+                        if ("character_id" in attacker) {
                             newKillerList = corpMapPilots.get(attacker.corporation_id).concat(attacker.character_id);
                         } else {
                             if (attacker.corporation_id.toString().startsWith('1000')) {
@@ -314,7 +322,12 @@ async function addKillToCorpStats(killID, corpMapPilots, killValue, killPoints, 
                         await updateCorpInfo(year, month, corpId, playerCorp.name, playerCorp.ticker, playerCorp.member_count, true);
                     } else {
                         const playerCorp = await getCorpInfo(corpId);
-                        await updateCorpInfo(year, month, corpId, playerCorp.name, playerCorp.ticker, playerCorp.member_count, false);
+                        if ("alliance_id" in playerCorp) {
+                            const playerAlliance = await getAllianceInfo(playerCorp.alliance_id);
+                            await updateCorpInfo(year, month, corpId, playerCorp.name, playerCorp.ticker, playerCorp.alliance_id, playerAlliance.name, playerAlliance.ticker, playerCorp.member_count, false);
+                        } else {
+                            await updateCorpInfo(year, month, corpId, playerCorp.name, playerCorp.ticker, playerCorp.member_count, false);
+                        }
                     }
                 }
             } catch (err) {
@@ -372,7 +385,12 @@ async function addVictimToCorpStats(killID, victim, killValue, killPoints, date,
                     await updateCorpInfo(year, month, corpId, playerCorp.name, playerCorp.ticker, playerCorp.member_count, true);
                 } else {
                     const playerCorp = await getCorpInfo(corpId);
-                    await updateCorpInfo(year, month, corpId, playerCorp.name, playerCorp.ticker, playerCorp.member_count, false);
+                    if ("alliance_id" in playerCorp) {
+                        const playerAlliance = await getAllianceInfo(playerCorp.alliance_id);
+                        await updateCorpInfo(year, month, corpId, playerCorp.name, playerCorp.ticker, playerCorp.alliance_id, playerAlliance.name, playerAlliance.ticker, playerCorp.member_count, false);
+                    } else {
+                        await updateCorpInfo(year, month, corpId, playerCorp.name, playerCorp.ticker, playerCorp.member_count, false);
+                    }
                     // append victim corp id for historical fetching needs later
                     if (recursiveOn) {
                         historicalQueue.push(corpId);

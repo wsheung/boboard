@@ -23,8 +23,19 @@ statsRouter.route('/monthyear')
     .get((req, res) => {
         var month = req.query.month;
         var year = req.query.year;
-        Stats.find({ _year: year, _month: month, isNPC: false }).sort({ netPoints: -1 }).limit(200).exec((err, item) => {
-            res.json(item);
+        var result = {};
+        Stats.find({ _year: year, _month: month, isNPC: false }).sort({ iskKilled: -1 }).limit(200).exec((err, item) => {
+            //res.json(item);
+            result.stats = item;
+            Stats.aggregate([
+                { "$group": { "_id": { _year: "$_year", _month: "$_month" } } }, {
+                    $sort:
+                        { "_id": 1 }
+                },
+            ]).exec((err, item) => {
+                result.range = item;
+                res.json(result);
+            });
         });
     });
 

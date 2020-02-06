@@ -94,7 +94,7 @@ export async function getTopCorpToFetchHistory(year, month) {
     }
 }
 
-export async function updateCorpInfo(year, month, corpId, name, ticker, newPopulation, isNPC) {
+export async function updateCorpInfo(year, month, corpId, corpName, corpTicker, allianceId, allianceName, allianceTicker, newPopulation, isNPC) {
     const filter = {
         _year: year,
         _month: month,
@@ -102,8 +102,11 @@ export async function updateCorpInfo(year, month, corpId, name, ticker, newPopul
     };
     const update = {
         totalMember: newPopulation,
-        _corpName: name,
-        _corpTicker: ticker,
+        _corpName: corpName,
+        _corpTicker: corpTicker,
+        allianceid: allianceId,
+        allianceTicker: allianceTicker,
+        alliance: allianceName,
         isNPC: isNPC
     };
     const options = {
@@ -124,7 +127,8 @@ export async function updateCorpInfo(year, month, corpId, name, ticker, newPopul
 
 export async function corpExistInDB(year, month, corpId) {
     try {
-        const searchCorpId = await CorpStat.count({ _year: year, _month: month, corpid: corpId }).exec();
+        const searchCorpId = await CorpStat.findOne({ _year: year, _month: month, corpid: corpId }).exec();
+        console.log(searchCorpId);
         return (searchCorpId > 0)
     } catch (err) {
         console.log(err);

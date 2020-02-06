@@ -18,10 +18,13 @@ import Tooltip from '@material-ui/core/Tooltip';
 import DeleteIcon from '@material-ui/icons/Delete';
 import FilterListIcon from '@material-ui/icons/FilterList';
 
-function createData(_corpName, _corpTicker, _killCount, _lossCount, _iskKilled, _iskLossed, _activePVPCount, _totalMember, _netPoints) {
+function createData(_corpid, _corpName, _corpTicker, _allianceid, _alliance, _allianceTicker, _killCount, _lossCount, _iskKilled, _iskLossed, _activePVPCount, _totalMember, _netPoints) {
   const corpName = _corpName || 0;
   const corpTicker = _corpTicker || 0;
-  const corpNameTicker = "[" + corpTicker + "] " + corpName;  
+  const corpTickerBracket = "[" + corpTicker + "]";
+  const allianceTicker = _allianceTicker ? "[" + _allianceTicker + "]" : "";
+  const allianceid = _allianceid ? _allianceid : "";
+  const allianceName = _alliance ? _alliance : "";
   const killCount = _killCount || 0;
   const lossCount = _lossCount || 0;
   const iskKilled = Math.round(_iskKilled || 0);
@@ -31,17 +34,31 @@ function createData(_corpName, _corpTicker, _killCount, _lossCount, _iskKilled, 
   const netPoints = _netPoints || 0;
 
   const netKill = killCount - lossCount;
-  const netIsk = Math.round(iskKilled - iskLossed);
+  const iskEff = (Math.round((iskKilled * 1000 / (iskKilled + iskLossed))) / 10).toPrecision(3) || 0;
   const activePVPRatio = Math.round(activePVPCount / totalMember * 100);
 
-  return { corpNameTicker, killCount, lossCount, netKill, iskKilled, iskLossed, netIsk, activePVPRatio, activePVPCount, totalMember, netPoints  };
+  return { _corpid, allianceTicker, allianceName, allianceid, corpName, corpTickerBracket, killCount, lossCount, netKill, iskKilled, iskLossed, iskEff, activePVPRatio, activePVPCount, totalMember, netPoints };
 }
 
 
 function createTable(data) {
   let newTable = [];
   data.forEach(corp => {
-    newTable.push(createData(corp._corpName, corp._corpTicker, corp.killCount, corp.lossCount, corp.iskKilled, corp.iskLossed, corp.activePVP.length, corp.totalMember, corp.netPoints));
+    newTable.push(createData(
+      corp._corpid,
+      corp._corpName,
+      corp._corpTicker,
+      corp.allianceid,
+      corp.alliance,
+      corp.allianceTicker,
+      corp.killCount,
+      corp.lossCount,
+      corp.iskKilled,
+      corp.iskLossed,
+      corp.activePVP.length,
+      corp.totalMember,
+      corp.netPoints
+      ));
   });
   return newTable;
 }
@@ -85,15 +102,18 @@ function getSorting(order, orderBy) {
 }
 
 const headCells = [
-  { id: 'corpNameTicker', numeric: false, disablePadding: false, label: 'Corporation' },
-  { id: 'netPoints', numeric: true, disablePadding: false, label: 'Net Point' },
-  { id: 'killCount', numeric: true, disablePadding: false, label: 'Kill Count' },
-  { id: 'lossCount', numeric: true, disablePadding: false, label: 'Loss Count' },
-  { id: 'netKill', numeric: true, disablePadding: false, label: 'Net Kill Count' },
-  { id: 'iskKilled', numeric: true, disablePadding: false, label: 'Isk Killed' },
-  { id: 'iskLossed', numeric: true, disablePadding: false, label: 'Isk Lossed' },
-  { id: 'netIsk', numeric: true, disablePadding: false, label: 'Net Isk' },
-  { id: 'activePVPCount', numeric: true, disablePadding: false, label: 'Active PVP' },
+  { id: 'Rank', numeric: true, disablePadding: true, sortable: false, label: 'Rank' },
+  { id: 'allianceTicker', numeric: false, disablePadding: false, sortable: false, label: 'Alliance' },
+  { id: 'corpTickerBracket', numeric: true, disablePadding: true, sortable: false, label: 'Corporation' },
+  { id: 'corpName', numeric: false, disablePadding: true, sortable: true, label: '' },
+  { id: 'iskKilled', numeric: true, disablePadding: false, sortable: true, label: 'Isk Killed' },
+  { id: 'iskLossed', numeric: true, disablePadding: false, sortable: true, label: 'Isk Lossed' },
+  { id: 'iskEff', numeric: true, disablePadding: false, sortable: false, label: 'isk Eff.%' },
+  { id: 'netPoints', numeric: true, disablePadding: false, sortable: true, label: 'Net Point' },
+  { id: 'killCount', numeric: true, disablePadding: false, sortable: true, label: 'Kill Count' },
+  { id: 'lossCount', numeric: true, disablePadding: false, sortable: true, label: 'Loss Count' },
+  { id: 'netKill', numeric: true, disablePadding: false, sortable: true, label: 'Net Kill Count' },
+  { id: 'activePVPCount', numeric: true, disablePadding: false, sortable: true, label: 'Active PVP' },
 ];
 
 
@@ -103,11 +123,41 @@ const styles = {
   },
   tableStickyHeaderText: {
     color: 'white',
+    fontWeight: 'bold'
   },
   tableCellStyle: {
     backgroundColor: 'rgba(46,56,66,1)',
     color: 'white'
   },
+  tableCellPositiveStyle: {
+    backgroundColor: 'rgba(46,56,66,1)',
+    color: '#cfa72d'
+  },
+  tableCellNegativeStyle: {
+    backgroundColor: 'rgba(46,56,66,1)',
+    color: '#ed5244'
+  },
+  tableCellLinkStyle: {
+    backgroundColor: 'rgba(46,56,66,1)',
+    fontWeight: 'bold',
+    color: 'white',
+    textDecoration: 'none'
+  },
+  tableCellCorpStyle: {
+    backgroundColor: 'rgba(46,56,66,1)',
+    fontWeight: 'bold',
+    color: '#d4ab31',
+    textDecoration: 'none'
+  },
+  corporationCellStyle: {
+    backgroundColor: 'rgba(46,56,66,1)',
+    fontWeight: 'bold',
+    color: 'white',
+    textDecoration: 'none',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    flex: 1
+  }
 }
 
 const StyledSortLabel = withStyles({
@@ -263,13 +313,15 @@ const useStyles = makeStyles(theme => ({
 }));
 
 
-export default function EnhancedTable({ data }) {
+const CorpTable = React.memo((props) => {
   const classes = useStyles();
+  const data = props.data ? props.data : [];
   var rows = createTable(data);
+  var searchValue = props.searchValue;
   const [order, setOrder] = React.useState('desc');
-  const [orderBy, setOrderBy] = React.useState('netPoints');
+  const [orderBy, setOrderBy] = React.useState('iskKilled');
   const [page, setPage] = React.useState(0);
-  const [dense, setDense] = React.useState(false);
+  const [dense, setDense] = React.useState(true);
   const [rowsPerPage, setRowsPerPage] = React.useState(25);
 
   const handleRequestSort = (event, property) => {
@@ -288,6 +340,7 @@ export default function EnhancedTable({ data }) {
     setPage(0);
   };
 
+  /*
   const handleChangeDense = event => {
     setDense(event.target.checked);
   };
@@ -295,6 +348,7 @@ export default function EnhancedTable({ data }) {
   const handleClick = (event, corpName) => {
     console.log(corpName);
   }
+  */
 
   const emptyRows = rowsPerPage - Math.min(rowsPerPage, rows.length - page * rowsPerPage);
 
@@ -307,7 +361,7 @@ export default function EnhancedTable({ data }) {
             className={classes.table}
             aria-labelledby="tableTitle"
             size={dense ? 'small' : 'medium'}
-            aria-label="enhanced table"
+            aria-label="corp table"
           >
             <EnhancedTableHead
               classes={classes}
@@ -318,26 +372,43 @@ export default function EnhancedTable({ data }) {
             />
             <TableBody>
               {stableSort(rows, getSorting(order, orderBy))
+                .filter((row, index) => {
+                  if (order === "desc") {
+                    row.rank = index + 1;
+                  } else {
+                    row.rank = rows.length - index;
+                  }
+                  const keepRow = searchValue.length === 0 ? true : ((row._corpid + " " + row.allianceTicker + " " + row.allianceName + " " + row.allianceid + " " + row.corpName + " " + row.corpTickerBracket).toLowerCase().includes(searchValue.toLowerCase())) ? true : false;
+                  return keepRow;
+                })
                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                 .map((row, index) => {
-                  const labelId = `enhanced-table-checkbox-${index}`;
+                  //const labelId = `enhanced-table-checkbox-${index}`;
 
                   return (
                     <TableRow
-                      key={row.corpNameTicker}
-                      hover
+                      key={row.corpName}
                       role="checkbox"
                     >
-                      <TableCell style={styles.tableCellStyle} component="th" id={labelId} scope="row">
-                        {row.corpNameTicker}
+                      <TableCell style={styles.tableCellStyle}  align="right">{row.rank}</TableCell>
+                      <TableCell style={styles.tableCellLinkStyle} component="a" href={"https://zkillboard.com/alliance/" + row.allianceid} target="_blank" id={row.allianceTicker} scope="row">
+                        {row.allianceTicker}
                       </TableCell>
+                      <TableCell style={styles.tableCellLinkStyle} component="a" href={"https://zkillboard.com/corporation/" + row._corpid} target="_blank" id={row.corpTickerBracket} scope="row">
+                        <div>{row.corpTickerBracket}</div>
+                      </TableCell>
+                      <TableCell style={styles.tableCellLinkStyle} component="a" href={"https://zkillboard.com/corporation/" + row._corpid} target="_blank" id={row.corpName} scope="row">
+                        <div>{row.corpName}</div>
+                      </TableCell>
+                      {/* Columns for isk stats */}
+                      <TableCell style={styles.tableCellPositiveStyle} align="right">{numberWithCommas(row.iskKilled)}</TableCell>
+                      <TableCell style={styles.tableCellNegativeStyle} align="right">{numberWithCommas(row.iskLossed)}</TableCell>
+                      <TableCell style={row.iskEff > 50 ? styles.tableCellPositiveStyle : styles.tableCellNegativeStyle} align="right">{row.iskEff} %</TableCell>
+                      {/* Columns for points stats */}
                       <TableCell style={styles.tableCellStyle} align="right">{row.netPoints}</TableCell>
-                      <TableCell style={styles.tableCellStyle} align="right">{row.killCount}</TableCell>
-                      <TableCell style={styles.tableCellStyle} align="right">{row.lossCount}</TableCell>
-                      <TableCell style={styles.tableCellStyle} align="right">{row.netKill}</TableCell>
-                      <TableCell style={styles.tableCellStyle} align="right">{numberWithCommas(row.iskKilled)}</TableCell>
-                      <TableCell style={styles.tableCellStyle} align="right">{numberWithCommas(row.iskLossed)}</TableCell>
-                      <TableCell style={styles.tableCellStyle} align="right">{numberWithCommas(row.netIsk)}</TableCell>
+                      <TableCell style={styles.tableCellPositiveStyle} align="right">{row.killCount}</TableCell>
+                      <TableCell style={styles.tableCellNegativeStyle} align="right">{row.lossCount}</TableCell>
+                      <TableCell style={ row.netKill > 0.5 ? styles.tableCellPositiveStyle : styles.tableCellNegativeStyle } align="right">{row.netKill}</TableCell>
                       <TableCell style={styles.tableCellStyle} align="right">{row.activePVPCount}</TableCell>
                     </TableRow>
                   );
@@ -370,4 +441,9 @@ export default function EnhancedTable({ data }) {
       /> */}
     </div>
   );
-}
+});
+
+//CorpTable.whyDidYouRender = true;
+
+
+export default CorpTable;

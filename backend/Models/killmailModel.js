@@ -20,6 +20,15 @@ var corpKMSchema = mongoose.Schema({
     _corpTicker: {
         type: String,
     },
+    allianceid: {
+        type: Number,
+    },
+    allianceTicker: {
+        type: String
+    },
+    alliance: {
+        type: String
+    },
     isNPC: {
         type: Boolean
     },

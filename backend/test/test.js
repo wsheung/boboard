@@ -1,14 +1,14 @@
 var assert = require('assert');
 const mongoose = require('mongoose');
-const express = require('./node_modules/express');
-const bodyParser = require('./node_modules/body-parser');
-const cors = require('./node_modules/cors');
+const express = require('express');
+const bodyParser = require('body-parser');
+const cors = require('cors');
 const app = express();
 
 import {
     findAndInsertNewMonth,
     corpExistInDB
-} from './API/mongodb';
+} from '../API/mongodb';
 
 // set up express
 app.use(cors());
@@ -30,7 +30,7 @@ before(function (done) {
 
 // TODO : Better test coverage is needed
 
-describe('Creating corporations', () => {
+describe('Creating corporations', async () => {
         it('should create new corporation entries in killmail collection and confirm that they exist', async () => {
             await Promise.all([
                 findAndInsertNewMonth(2019, 12, 98290394),
