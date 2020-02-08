@@ -19,7 +19,7 @@ export async function getKillMailCCP(killId, killHash) {
         .catch(async err => {
             console.log('Error in fetching CCP ESI endpoint for Killmail ' + killId + "with hash : " + killHash);
             await sleep(500);
-            console.log(err);
+            //console.log(err);
         });
     }
     return solution;

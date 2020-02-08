@@ -182,6 +182,7 @@ async function getHistoricalData(corpid) {
             var packageBatch = await fetchMonthKMForCorp(corpid, month, year);
 
             if (packageBatch == null) {
+                console.log("historicalQ is incremented");
                 historicalQueue.push(corpid); // push it back to the end of queue and maybe it will sort itself out later
                 break; // beak out of loop in case something is wrong with the package batch
             }

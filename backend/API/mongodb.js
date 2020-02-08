@@ -30,6 +30,11 @@ export async function findAndInsertNewMonth(year, month, corpId) {
         } else {
             // document doesn't exist, we will need to move to upsert solution with CCP data
             const playerCorp = await getCorpInfo(corpId); // fetch corp info from CCP ESI
+            const playerAlliance = await getAllianceInfo(playerCorp.alliance_id);
+            update.allianceid = playerCorp.alliance_id;
+            update.allianceTicker = playerAlliance.ticker;
+            update.alliance = playerAlliance.name;
+            
             update._corpName = playerCorp.name;
             update._corpTicker = playerCorp.ticker;
             update.totalMember = playerCorp.member_count;
