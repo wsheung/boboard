@@ -61,24 +61,16 @@ mongoose.connect('mongodb://localhost:27017/MyDb', { useNewUrlParser: true, useU
 
 
 // Global variables for now
-var runningHistoricalKMFetch = false;
 var historicalQueue = [];
 
 // cron job for real time km feed
-cron.schedule('*/15 * * * *', async () => {
-    if (!runningHistoricalKMFetch) {
+var realTimeTask = cron.schedule('*/15 * * * *', async () => {
         console.log('running a fetch task every 1/4 hour');
-        // if we are still fetching, give us a break
         await getRealTimeKM();
-    } else {
-        // if not, we are fine
-        console.log("we waiting for next time");
-        return;
-    }
-
 });
 
 async function getRealTimeKM() {
+    realTimeTask.stop();
     var kmBatch = []; // process km batch by batch
 
     var km = await fetchKMFromRedisQ();
@@ -86,6 +78,7 @@ async function getRealTimeKM() {
     while (km.package != null) {
         if (km.package.killmail.solar_system_id.toString().startsWith("3100")) {
             //wormhole systemid starts with 3100XXXX
+            console.log("added one new km");
             kmBatch.push(km);
         }
         km = await fetchKMFromRedisQ();
@@ -93,30 +86,30 @@ async function getRealTimeKM() {
     // if we managed to any KM from in this round, we pass it to processing
 
     if (kmBatch.length > 0) {
+        console.log("processing km batch of length : "+ kmBatch.length);
         await processRealTimeBatch(kmBatch, true);
         // reset kmBatch after process, not really necessary but nice to have
         kmBatch = [];
         await processGlobalHistoricalQueue();
     }
+    realTimeTask.start();
 }
 
 async function processGlobalHistoricalQueue() {
-    runningHistoricalKMFetch = true;
+    console.log("starting to process historical killmails");
+    const oldHistoricalQ = historicalQueue;
     _.union(historicalQueue, historicalQueue); // removing duplicates in case of any
+    console.log("difference between old and new historicalq is : " + oldHistoricalQ.length - historicalQueue.length);
     while (historicalQueue.length > 0) {
         var d = new Date(); // get curren time
         var m = d.getMinutes();
         var h = d.getHours();
-        if ((m > 12 && m < 15) || (m > 27 && m < 30) || (m > 42 && m < 45) || (m > 57 && m < 60)) {
-            console.log("stop fetching history so we can fetch real time");
-            break;
-        }
         // if there is remaining unprocessed stuff
         const corpid = historicalQueue[0];
         await getHistoricalData(corpid);
         historicalQueue.shift();
+        console.log("new historical queue is length" + historicalQueue.length);
     }
-    runningHistoricalKMFetch = false;
 }
 
 
@@ -189,11 +182,11 @@ async function getHistoricalData(corpid) {
             var packageBatch = await fetchMonthKMForCorp(corpid, month, year);
 
             if (packageBatch == null) {
-                historicalQueue.append(corpid); // push it back to the end of queue and maybe it will sort itself out later
+                historicalQueue.push(corpid); // push it back to the end of queue and maybe it will sort itself out later
                 break; // beak out of loop in case something is wrong with the package batch
             }
 
-            // we push it to the right function to process it
+            // we push it to the right function to process it, don't do recursive since thats only for testing
             await processRealTimeBatch(packageBatch, false);
         }
 
@@ -316,17 +309,17 @@ async function addKillToCorpStats(killID, corpMapPilots, killValue, killPoints, 
                         var factionCorp = await getFactionInfo(corpId);
                         var factionName = factionCorp.name;
                         var acronym = factionName.match(/\b(\w)/g).join('');
-                        await updateCorpInfo(year, month, corpId, factionCorp.name, acronym, 1, true); // NPC corp effectively have one member
+                        await updateCorpInfo(year, month, corpId, factionCorp.name, acronym, null, null, null, 1, true); // NPC corp effectively have one member
                     } else if (corpId.toString().startsWith("1000")) {
                         const playerCorp = await getCorpInfo(corpId);
-                        await updateCorpInfo(year, month, corpId, playerCorp.name, playerCorp.ticker, playerCorp.member_count, true);
+                        await updateCorpInfo(year, month, corpId, playerCorp.name, playerCorp.ticker, null, null, null, playerCorp.member_count, true);
                     } else {
                         const playerCorp = await getCorpInfo(corpId);
                         if ("alliance_id" in playerCorp) {
                             const playerAlliance = await getAllianceInfo(playerCorp.alliance_id);
                             await updateCorpInfo(year, month, corpId, playerCorp.name, playerCorp.ticker, playerCorp.alliance_id, playerAlliance.name, playerAlliance.ticker, playerCorp.member_count, false);
                         } else {
-                            await updateCorpInfo(year, month, corpId, playerCorp.name, playerCorp.ticker, playerCorp.member_count, false);
+                            await updateCorpInfo(year, month, corpId, playerCorp.name, playerCorp.ticker, null, null, null, playerCorp.member_count, false);
                         }
                     }
                 }
@@ -382,14 +375,14 @@ async function addVictimToCorpStats(killID, victim, killValue, killPoints, date,
                 // corp not in system, we need to ask ccp for info given corpId
                 if (corpId.toString().startsWith("1000")) {
                     const playerCorp = await getCorpInfo(corpId);
-                    await updateCorpInfo(year, month, corpId, playerCorp.name, playerCorp.ticker, playerCorp.member_count, true);
+                    await updateCorpInfo(year, month, corpId, playerCorp.name, playerCorp.ticker,null, null, null, playerCorp.member_count, true);
                 } else {
                     const playerCorp = await getCorpInfo(corpId);
                     if ("alliance_id" in playerCorp) {
                         const playerAlliance = await getAllianceInfo(playerCorp.alliance_id);
                         await updateCorpInfo(year, month, corpId, playerCorp.name, playerCorp.ticker, playerCorp.alliance_id, playerAlliance.name, playerAlliance.ticker, playerCorp.member_count, false);
                     } else {
-                        await updateCorpInfo(year, month, corpId, playerCorp.name, playerCorp.ticker, playerCorp.member_count, false);
+                        await updateCorpInfo(year, month, corpId, playerCorp.name, playerCorp.ticker, null, null, null, playerCorp.member_count, false);
                     }
                     // append victim corp id for historical fetching needs later
                     if (recursiveOn) {

@@ -66,7 +66,7 @@ const RankingTable = React.memo((props) => {
                     if (!isEqual(res.data.stats, data)) {
                         setData(res.data.stats);
                     }
-                    if (selectedTab == null) {
+                    if (selectedTab == null && res != null) {
                         setTabData(res.data.range)
                         setSelectedTab(res.data.range.length - 1);
                     }
@@ -76,8 +76,8 @@ const RankingTable = React.memo((props) => {
                 })
         }
         const date = new Date();
-        const year = selectedTab != null ? tabData[selectedTab]._id._year : date.getUTCFullYear();
-        const month = selectedTab != null ? tabData[selectedTab]._id._month : date.getUTCMonth() + 1;
+        const year = tabData.length !== 0 ? tabData[selectedTab]._id._year : date.getUTCFullYear();
+        const month = tabData.length !== 0 ? tabData[selectedTab]._id._month : date.getUTCMonth() + 1;
         fetchData(month, year);
     }, [selectedTab]);
 

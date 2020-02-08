@@ -24,7 +24,7 @@ statsRouter.route('/monthyear')
         var month = req.query.month;
         var year = req.query.year;
         var result = {};
-        Stats.find({ _year: year, _month: month, isNPC: false }).sort({ iskKilled: -1 }).limit(200).exec((err, item) => {
+        Stats.find({ _year: year, _month: month, isNPC: false, completed: true }).sort({ iskKilled: -1 }).limit(200).exec((err, item) => {
             //res.json(item);
             result.stats = item;
             Stats.aggregate([

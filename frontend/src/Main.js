@@ -121,8 +121,6 @@ const useStyles = makeStyles(theme => ({
 }));
 
 
-
-
 export default function Main() {
     const classes = useStyles();
     const theme = useTheme();
@@ -144,9 +142,16 @@ export default function Main() {
 
     const updateSearch = _.debounce((val) => { setSearchValue(val) }, 500);
 
+    const onHomeListItemClick = () => {
+        if (showAbout !== false) {
+            setShowAbout(false)
+        }
+    }
 
-    const onShowAboutChange = () => {
-        setShowAbout(!showAbout);
+    const onAboutListItemClick = () => {
+        if (showAbout !== true) {
+            setShowAbout(true)
+        }
     }
 
     return (
@@ -204,7 +209,7 @@ export default function Main() {
                 <Divider />
                 <List>
                     {['Home'].map((text, index) => (
-                        <ListItem button key={text} onClick={onShowAboutChange}>
+                        <ListItem button key={text} onClick={onHomeListItemClick}>
                             <ListItemIcon className={classes.drawerListText} >{<HomeIcon />}</ListItemIcon>
                             <ListItemText className={classes.drawerListText} primary={text} />
                         </ListItem>
@@ -213,7 +218,7 @@ export default function Main() {
                 <Divider />
                 <List>
                     {['About Wormboard'].map((text, index) => (
-                        <ListItem button key={text} onClick={onShowAboutChange}>
+                        <ListItem button key={text} onClick={onAboutListItemClick}>
                             <ListItemIcon className={classes.drawerListText}>{<InfoIcon />}</ListItemIcon>
                             <ListItemText className={classes.drawerListText} primary={text} />
                         </ListItem>
