@@ -39,8 +39,8 @@ export async function getCorpInfo(corpId) {
         })
         .catch(err => {
             console.log('Error in fetching corp info for corp id ' + corpId);
-            console.log(err);
-            return err;
+            //console.log(err);
+            //return err;
         });
 }
 
@@ -58,8 +58,8 @@ export async function getAllianceInfo(allianceId) {
         })
         .catch(err => {
             console.log('Error in fetching alliance info for alliance id ' + allianceId);
-            console.log(err);
-            return err;
+            //console.log(err);
+            //return err;
         });
 }
 
@@ -83,7 +83,7 @@ export async function getFactionInfo(factionId) {
         })
         .catch(err => {
             console.log('Error in fetching faction info for factionid ' + factionId);
-            console.log(err);
-            return err;
+            //console.log(err);
+            //return err;
         });
 }

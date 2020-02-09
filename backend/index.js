@@ -98,7 +98,7 @@ async function getRealTimeKM() {
 async function processGlobalHistoricalQueue() {
     console.log("starting to process historical killmails");
     const oldHistoricalQ = historicalQueue;
-    _.union(historicalQueue, historicalQueue); // removing duplicates in case of any
+    _.union(historicalQueue); // removing duplicates in case of any
     console.log("difference between old and new historicalq is : " + oldHistoricalQ.length - historicalQueue.length);
     while (historicalQueue.length > 0) {
         var d = new Date(); // get curren time
