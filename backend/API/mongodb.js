@@ -30,11 +30,14 @@ export async function findAndInsertNewMonth(year, month, corpId) {
             return documentExist;
         } else {
             // document doesn't exist, we will need to move to upsert solution with CCP data
+            console.log("document don't exist, we need to insert new one");
             const playerCorp = await getCorpInfo(corpId); // fetch corp info from CCP ESI
+            if ("alliance_id" in playerCorp) {
             const playerAlliance = await getAllianceInfo(playerCorp.alliance_id);
-            update.allianceid = playerCorp.alliance_id;
-            update.allianceTicker = playerAlliance.ticker;
-            update.alliance = playerAlliance.name;
+                update.allianceid = playerCorp.alliance_id;
+                update.allianceTicker = playerAlliance.ticker;
+                update.alliance = playerAlliance.name;
+            }
             
             update._corpName = playerCorp.name;
             update._corpTicker = playerCorp.ticker;
@@ -113,7 +116,7 @@ export async function updateCorpInfo(year, month, corpId, corpName, corpTicker, 
         allianceid: allianceId,
         allianceTicker: allianceTicker,
         alliance: allianceName,
-        isNPC: isNPC
+        isNPC: isNPC,
     };
     const options = {
         upsert: true,

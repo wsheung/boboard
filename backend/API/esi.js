@@ -9,16 +9,22 @@ export async function getKillMailCCP(killId, killHash) {
         json: true
     };
     var fetchKMSuccess = false;
+    var errorExist = false;
     var solution;
     while (!fetchKMSuccess) {
-        solution = await rp(options)
+        await rp(options)
         .then(response => {
             fetchKMSuccess = true;
-            return response;
+            solution = response;
+            //console.log(response);
+            if (errorExist) {
+                console.log("error solved by repeating call");
+            }
         })
         .catch(async err => {
             console.log('Error in fetching CCP ESI endpoint for Killmail ' + killId + "with hash : " + killHash);
             await sleep(500);
+            errorExist = true;
             //console.log(err);
         });
     }
@@ -33,15 +39,27 @@ export async function getCorpInfo(corpId) {
         json: true
     };
 
-    return rp(options)
+    var fetchCorpSuccess = false;
+    var solution;
+    var errorExist = false;
+    while (!fetchCorpSuccess) {
+        await rp(options)
         .then(response => {
-            return response;
+            fetchCorpSuccess = true;
+            solution = response;
+            if (errorExist) {
+                console.log("error solved by repeating call");
+            }
+            //console.log(response);
         })
         .catch(err => {
             console.log('Error in fetching corp info for corp id ' + corpId);
+            errorExist = true;
             //console.log(err);
             //return err;
         });
+    }
+    return solution;
 }
 
 export async function getAllianceInfo(allianceId) {
@@ -51,16 +69,26 @@ export async function getAllianceInfo(allianceId) {
         uri: url,
         json: true
     };
-
-    return rp(options)
+    var fetchAllianceSuccess = false;
+    var solution;
+    var errorExist = false;
+    while (!fetchAllianceSuccess) {
+        await rp(options)
         .then(response => {
-            return response;
+            fetchAllianceSuccess = true;
+            solution = response;
+            if (errorExist) {
+                console.log("error solved by repeating call");
+            }
+            //console.log(response);
         })
         .catch(err => {
             console.log('Error in fetching alliance info for alliance id ' + allianceId);
+            errorExist = true;
             //console.log(err);
-            //return err;
         });
+    }
+    return solution;
 }
 
 export async function getFactionInfo(factionId) {

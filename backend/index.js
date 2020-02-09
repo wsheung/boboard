@@ -70,12 +70,13 @@ var realTimeTask = cron.schedule('*/15 * * * *', async () => {
 });
 
 async function getRealTimeKM() {
+    console.log("start realtime fetching");
     realTimeTask.stop();
     var kmBatch = []; // process km batch by batch
 
     var km = await fetchKMFromRedisQ();
 
-    while (km.package != null) {
+    while (km.package != null && kmBatch.length < 50) { // throttle it by increments of 50 WH km each time
         if (km.package.killmail.solar_system_id.toString().startsWith("3100")) {
             //wormhole systemid starts with 3100XXXX
             console.log("added one new km");
@@ -87,7 +88,7 @@ async function getRealTimeKM() {
 
     if (kmBatch.length > 0) {
         console.log("processing km batch of length : "+ kmBatch.length);
-        await processRealTimeBatch(kmBatch, true);
+        await processRealTimeBatch(kmBatch, true); // we use recursive case since this is the realtimefetch
         // reset kmBatch after process, not really necessary but nice to have
         kmBatch = [];
         await processGlobalHistoricalQueue();
@@ -97,9 +98,9 @@ async function getRealTimeKM() {
 
 async function processGlobalHistoricalQueue() {
     console.log("starting to process historical killmails");
-    const oldHistoricalQ = historicalQueue;
-    _.union(historicalQueue); // removing duplicates in case of any
-    console.log("difference between old and new historicalq is : " + oldHistoricalQ.length - historicalQueue.length);
+    console.log("size is : " + historicalQueue);
+    historicalQueue = _.union(historicalQueue, historicalQueue); // removing duplicates in case of any
+    console.log("new size is : " + historicalQueue);
     while (historicalQueue.length > 0) {
         var d = new Date(); // get curren time
         var m = d.getMinutes();
@@ -109,7 +110,6 @@ async function processGlobalHistoricalQueue() {
         await getHistoricalData(corpid);
         historicalQueue.shift();
         console.log("new historical queue is length" + historicalQueue.length);
-        console.log("historical queue is made up of : " + historicalQueue);
     }
 }
 
@@ -126,7 +126,7 @@ async function fetchMonthKMForCorp(corpid, month, year) {
         // start by getting the list of kms for a given corp in a given month
         var killsInMonthForCorp = await getHistoricalForCorp(year, month, corpid, page);
         while (killsInMonthForCorp == null && retryNum > 0) {
-            await sleep(2000);
+            await sleep(3000);
             killsInMonthForCorp = await getHistoricalForCorp(year, month, corpid, page);
             retryNum--;
         }
@@ -144,8 +144,10 @@ async function fetchMonthKMForCorp(corpid, month, year) {
     const listCorpProcessedKM = await findAndInsertNewMonth(year, month, corpid);
 
     if (listCorpProcessedKM) {
+        console.log("pre difference : " + kmBatch.length);
         // do a quick left join to remove already accounted KMs in the historical batch
         kmBatch = _.difference(kmBatch, listCorpProcessedKM.processedKMID);
+        console.log("post difference : " + kmBatch.length);
     }
 
     // we've fetched all kills for given corpid in month, now fetch the full
@@ -170,7 +172,7 @@ async function getHistoricalData(corpid) {
     var date = new Date();
 
     // we want to get the past 3 months for now
-    for (var i = 0; i < 6; i++) {
+    for (var i = 0; i < 2; i++) {
         var year = date.getUTCFullYear();
         var month = date.getUTCMonth() + 1;
 
@@ -181,9 +183,8 @@ async function getHistoricalData(corpid) {
         // if not processed before, start fetching
         if (!corpDocument.completed && !isCorpNPC) {
             var packageBatch = await fetchMonthKMForCorp(corpid, month, year);
-
             if (packageBatch == null) {
-                console.log("historicalQ is incremented");
+                console.log("historicalQ is incremented but something is wrong, here is the corpid : " + corpid);
                 historicalQueue.push(corpid); // push it back to the end of queue and maybe it will sort itself out later
                 break; // beak out of loop in case something is wrong with the package batch
             }
@@ -199,11 +200,11 @@ async function getHistoricalData(corpid) {
 }
 
 async function processRealTimeBatch(listOfKMs, recursiveOn) {
+    console.log("in processrealtimebatch historicalq length is : "+ historicalQueue);
     // all KMs in listOfKMs are wormhole KMs
     await asyncForEach(listOfKMs, async (km) => {
         const killmail = km.package.killmail;
         const zkb = km.package.zkb;
-
         const attackers = killmail.attackers; // array of attackers
         const victim = killmail.victim; // victim object
         const killmailTime = killmail.killmail_time;
@@ -228,6 +229,7 @@ async function processRealTimeBatch(listOfKMs, recursiveOn) {
                             if (!attacker.corporation_id.toString().startsWith('1000')) {
                                 // append corp id for historical fetching needs later
                                 if (recursiveOn) {
+                                    console.log("we pushed new realtimefetch corp into queue : " + attacker.corporation_id);
                                     historicalQueue.push(attacker.corporation_id);
                                 }
                             }
@@ -339,7 +341,6 @@ async function addKillToCorpStats(killID, corpMapPilots, killValue, killPoints, 
         }
     }
     // after handling new kms we start fetching historical stuff
-
 }
 
 async function addVictimToCorpStats(killID, victim, killValue, killPoints, date, recursiveOn) {
@@ -388,6 +389,7 @@ async function addVictimToCorpStats(killID, victim, killValue, killPoints, date,
                     }
                     // append victim corp id for historical fetching needs later
                     if (recursiveOn) {
+                        console.log("we pushed new realtimefetch corp into queue : " + corpId);
                         historicalQueue.push(corpId);
                     }
                 }
