@@ -109,6 +109,7 @@ async function processGlobalHistoricalQueue() {
         await getHistoricalData(corpid);
         historicalQueue.shift();
         console.log("new historical queue is length" + historicalQueue.length);
+        console.log("historical queue is made up of : " + historicalQueue);
     }
 }
 

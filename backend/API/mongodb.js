@@ -3,6 +3,7 @@ const CorpStat = require('../Models/killmailModel.js');
 
 import {
     getCorpInfo,
+    getAllianceInfo
 } from './esi';
 
 export async function findAndInsertNewMonth(year, month, corpId) {
