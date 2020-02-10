@@ -171,8 +171,8 @@ async function fetchMonthKMForCorp(corpid, month, year) {
 async function getHistoricalData(corpid) {
     var date = new Date();
 
-    // we want to get the past 3 months for now
-    for (var i = 0; i < 2; i++) {
+    // we want to get the past 6 months for now
+    for (var i = 0; i < 6; i++) {
         var year = date.getUTCFullYear();
         var month = date.getUTCMonth() + 1;
 
