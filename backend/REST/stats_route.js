@@ -14,7 +14,7 @@ statsRouter.route('/')
 
 statsRouter.route('/top100')
     .get((req, res) => {
-        Stats.find({ isNPC: false}).sort({ netPoints: -1 }).limit(100).exec((err, item) => {
+        Stats.find({ isNPC: false }).sort({ netPoints: -1 }).limit(100).exec((err, item) => {
             res.json(item);
         });
     });
@@ -27,7 +27,8 @@ statsRouter.route('/monthyear')
         Stats.find({ _year: year, _month: month, isNPC: false, completed: true }).sort({ iskKilled: -1 }).limit(200).exec((err, item) => {
             //res.json(item);
             result.stats = item;
-            Stats.aggregate([
+            Stats.find({ completed: true, isNPC: false })
+            .aggregate([
                 { "$group": { "_id": { _year: "$_year", _month: "$_month" } } }, {
                     $sort:
                         { "_id": 1 }
@@ -41,7 +42,8 @@ statsRouter.route('/monthyear')
 
 statsRouter.route('/timeRange')
     .get((req, res) => {
-        Stats.aggregate([
+        Stats.find({ completed: true, isNPC: false })
+        .aggregate([
             { "$group": { "_id": { _year: "$_year", _month: "$_month" } } }, {
                 $sort:
                     { "_id": 1 }
