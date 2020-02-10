@@ -3,4 +3,5 @@
   background-color: #0f1215;
   min-height: 100%;
   display: flex;
+  overscroll-behavior: none;
 }

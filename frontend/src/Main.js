@@ -33,6 +33,7 @@ const useStyles = makeStyles(theme => ({
         overflowX: 'auto',
         height: '100vh',
         width: '100vw',
+        overscrollBehavior: 'none'
     },
     appBar: {
         transition: theme.transitions.create(['margin', 'width'], {

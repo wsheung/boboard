@@ -16,7 +16,6 @@ const useStyles = makeStyles(theme => ({
     root: {
         display: 'flex',
         height: '100vh',
-        width: '100vw',
     },
     drawerHeader: {
         display: 'flex',
@@ -97,12 +96,8 @@ const RankingTable = React.memo((props) => {
                 <div className={classes.drawerHeader} />
                 <Grid justify="center" alignItems="flex-start" direction="row" container>
                     <Grid item lg={12} xs={12} sm={12}>
-                        <Grid item>
-                            <MonthTab selectedTab={selectedTab} tabData={tabData} callbackFromParent={myCallBack} />
-                        </Grid>
-                        <Grid item>
-                            <CorpTable searchValue={props.searchValue} data={data} />
-                        </Grid>
+                        <MonthTab selectedTab={selectedTab} tabData={tabData} callbackFromParent={myCallBack} />
+                        <CorpTable searchValue={props.searchValue} data={data} />
                     </Grid>
                 </Grid>
             </main>
