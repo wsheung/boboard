@@ -67,7 +67,6 @@ const MonthTab = React.memo((props) => {
     const classes = useStyles();
     const tabData = props.tabData; // need to implement sort function
     const selectedTab = props.selectedTab;
-    console.log("value use state is : " + selectedTab);
     var index = -1;
 
     const handleChange = (event, newValue) => {

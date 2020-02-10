@@ -28,7 +28,7 @@ statsRouter.route('/monthyear')
             //res.json(item);
             result.stats = item;
             Stats.aggregate([
-                { $match: { completed: true, isNPC: false } },
+                { "$match": { "completed": true, "isNPC": false } },
                 { "$group": { "_id": { _year: "$_year", _month: "$_month" } } }, {
                     $sort:
                         { "_id": 1 }
@@ -43,7 +43,7 @@ statsRouter.route('/monthyear')
 statsRouter.route('/timeRange')
     .get((req, res) => {
         Stats.aggregate([
-            { $match: { completed: true, isNPC: false } },
+            { "$match": { "completed": true, "isNPC": false } },
             { "$group": { "_id": { _year: "$_year", _month: "$_month" } } }, {
                 $sort:
                     { "_id": 1 }
