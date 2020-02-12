@@ -306,7 +306,7 @@ const useStyles = makeStyles(theme => ({
     width: 1,
   },
   container: {
-    maxHeight: 600,
+    // maxHeight: 600,
     borderTopLeftRadius: '10px',
     borderTopRightRadius: '10px',
   }

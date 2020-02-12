@@ -89,8 +89,8 @@ const MonthTab = React.memo((props) => {
                         index++;
                         return(
                             <Tab key={tabName} style={{
-                                borderTopLeftRadius: '15px',
-                                borderTopRightRadius: '15px',
+                                borderTopLeftRadius: '5px',
+                                borderTopRightRadius: '5px',
                                 borderRightColor: '#131313',
                                 borderRightWidth: '20px',
                                 backgroundColor: '#191f24',
