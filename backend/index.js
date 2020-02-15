@@ -62,6 +62,23 @@ mongoose.connect('mongodb://localhost:27017/MyDb', { useNewUrlParser: true, useU
 
 // Global variables for now
 var historicalQueue = [];
+var startTime, endTime;
+
+function start() {
+	startTime = new Date();
+}
+
+function end() {
+	endTime = new Date();
+	var diff = endTime - startTime; // in ms
+	diff /= 1000; // rid of ms
+	var seconds = Math.round(diff);
+	var minutes = diff / 60;
+	console.log("last batch finished in : " + minutes);
+	if (minutes > 180) {
+		console.log("Took too long to process batch, might missed a few kms");
+	}
+}
 
 // cron job for real time km feed
 var realTimeTask = cron.schedule('*/15 * * * *', async () => {
@@ -69,14 +86,17 @@ var realTimeTask = cron.schedule('*/15 * * * *', async () => {
         await getRealTimeKM();
 });
 
+getRealTimeKM();
+
 async function getRealTimeKM() {
     console.log("start realtime fetching");
     realTimeTask.stop();
+    start();
     var kmBatch = []; // process km batch by batch
 
     var km = await fetchKMFromRedisQ();
 
-    while (km.package != null && kmBatch.length < 50) { // throttle it by increments of 50 WH km each time
+    while (km.package != null) { // throttle it by increments of 50 WH km each time
         if (km.package.killmail.solar_system_id.toString().startsWith("3100")) {
             //wormhole systemid starts with 3100XXXX
             console.log("added one new km");
@@ -94,6 +114,7 @@ async function getRealTimeKM() {
         await processGlobalHistoricalQueue();
     }
     realTimeTask.start();
+    end();
 }
 
 async function processGlobalHistoricalQueue() {
