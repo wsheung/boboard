@@ -1,7 +1,7 @@
 # BoBoard
 A revival of wormboard - stats tracking page for wormhole kills by wormhole corporations
 
-#See Wiki for installation instructions
+See [Wiki](https://github.com/wsheung/boboard/wiki) for installation instructions
 
 ## Backend development
 boboard use mongodb as to store KMs
@@ -23,10 +23,6 @@ Build via
 `yarn build`
 
 ## Pending tasks
-
-1. Hook up frontend with backend (DONE)
-2. Implement fetchHistoricalKMsByCorp backend (DONE)
-3. Iterate on frontend design (DONE)
-4. Backend should store list of processed km in db, so that historical process don't refetch existing km (DONE)
-5. Frontend needs to be able to build and deploy (DONE)
-6. Dockerize/ automate deployment for backend (WIP)
+1. Store rank in backend for each month and refresh change in rank every week(?)
+2. (Frontend only) displaying active pilot names on row dropdown
+3. Calculating average gang size for each corp
