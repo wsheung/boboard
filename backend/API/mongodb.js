@@ -14,6 +14,7 @@ export async function findAndInsertNewMonth(year, month, corpId) {
     };
     var update = {
         completed: false,
+	lastUpdate: new Date()
     };
     var options = {
         new: true,
@@ -82,7 +83,8 @@ export async function setCorpStatsComplete(year, month, corpId) {
         _corpid: corpId
     };
     const update = {
-        completed: true
+        completed: true,
+	lastUpdate: new Date()
     };
 
     try {
@@ -117,6 +119,7 @@ export async function updateCorpInfo(year, month, corpId, corpName, corpTicker, 
         allianceTicker: allianceTicker,
         alliance: allianceName,
         isNPC: isNPC,
+	lastUpdate: new Date()
     };
     const options = {
         upsert: true,

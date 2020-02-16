@@ -81,8 +81,8 @@ function end() {
 }
 
 // cron job for real time km feed
-var realTimeTask = cron.schedule('*/15 * * * *', async () => {
-        console.log('running a fetch task every 1/4 hour');
+var realTimeTask = cron.schedule('*/5 * * * *', async () => {
+        console.log('running a fetch task every 5 minutes');
         await getRealTimeKM();
 });
 
@@ -96,7 +96,7 @@ async function getRealTimeKM() {
 
     var km = await fetchKMFromRedisQ();
 
-    while (km.package != null) { // throttle it by increments of 50 WH km each time
+    while (km.package != null && kmBatch.length < 50) { // throttle it by increments of 50 WH km each time
         if (km.package.killmail.solar_system_id.toString().startsWith("3100")) {
             //wormhole systemid starts with 3100XXXX
             console.log("added one new km");
@@ -123,14 +123,18 @@ async function processGlobalHistoricalQueue() {
     historicalQueue = _.union(historicalQueue, historicalQueue); // removing duplicates in case of any
     console.log("new size is : " + historicalQueue);
     while (historicalQueue.length > 0) {
-        var d = new Date(); // get curren time
-        var m = d.getMinutes();
-        var h = d.getHours();
-        // if there is remaining unprocessed stuff
-        const corpid = historicalQueue[0];
-        await getHistoricalData(corpid);
-        historicalQueue.shift();
-        console.log("new historical queue is length" + historicalQueue.length);
+	// if there are still remaining stiff in queue
+        var currentTime = new Date(); // get current time
+        var secondSinceStart = (currentTime - startTime) / 1000;
+	if ((secondSinceStart / 60) < 100) {
+        	const corpid = historicalQueue[0];
+        	await getHistoricalData(corpid);
+        	historicalQueue.shift();
+        	console.log("we are still under 100 minute mark, keep processing historical km");
+	} else {
+		console.log("took too long fetching historical queue, switching back to realtime to avoid missing new kms");
+		break;
+	}
     }
 }
 
@@ -176,14 +180,16 @@ async function fetchMonthKMForCorp(corpid, month, year) {
     for (var kmIndex = 0; kmIndex < kmBatch.length; kmIndex++) {
         const kId = kmBatch[kmIndex].killmail_id;
         const kHash = kmBatch[kmIndex].zkb.hash;
-        // reach out to ESI for full KM
-        const fullKM = await getKillMailCCP(kId, kHash);
-        // we need to construct the "package" object the same way redisQ returns them to re-use realtime code
-        kmBatch[kmIndex].killmail = fullKM;
-        kmBatch[kmIndex].killID = kId;
-        const mimicRedisObject = {};
-        mimicRedisObject.package = kmBatch[kmIndex];
-        packageBatch.push(mimicRedisObject);
+        // reach out to ESI for full KM if its not awox
+	if (kmBatch[kmIndex].zkb.awox == false) {
+	        const fullKM = await getKillMailCCP(kId, kHash);
+	        // we need to construct the "package" object the same way redisQ returns them to re-use realtime code
+	        kmBatch[kmIndex].killmail = fullKM;
+	        kmBatch[kmIndex].killID = kId;
+	        const mimicRedisObject = {};
+	        mimicRedisObject.package = kmBatch[kmIndex];
+	        packageBatch.push(mimicRedisObject);
+	}
     }
     // return the batch for processing
     return packageBatch;
@@ -260,7 +266,8 @@ async function processRealTimeBatch(listOfKMs, recursiveOn) {
                                 killer.push(attacker.ship_type_id);
                             } else {
                                 // this should never happen
-                                killer.push(attacker.corporation_id);
+                                //console.log("something bad happened, we found a killmail that doesn't have corpid and character id and its not an npc here it is : " + killID);
+				killer.push(attacker.corporation_id);
                             }
                         }
                         corpMapPilots.set(attacker.corporation_id, killer);
@@ -274,8 +281,9 @@ async function processRealTimeBatch(listOfKMs, recursiveOn) {
                                 newKillerList = corpMapPilots.get(attacker.corporation_id).concat(attacker.ship_type_id);
                             } else {
                                 // this should never happen
+				//console.log("something bad happened, we found a km that exist on previous processed attackers but don't have character id and its not npc");
                                 newKillerList = corpMapPilots.get(attacker.corporation_id).concat(attacker.corporation_id);
-                            }
+				}
                         }
                         corpMapPilots.set(attacker.corporation_id, newKillerList);
                     }
@@ -310,6 +318,7 @@ async function addKillToCorpStats(killID, corpMapPilots, killValue, killPoints, 
                 _corpid: corpId
             };
             const update = {
+    		lastUpdate: new Date(),
                 $inc: {
                     killCount: 1,
                     iskKilled: killValue,
@@ -369,13 +378,14 @@ async function addVictimToCorpStats(killID, victim, killValue, killPoints, date,
     const month = date.getUTCMonth() + 1;
     const corpId = victim.corporation_id;
     const listCorpProcessedKM = await corpProcessedKM(year, month, corpId);
-    if (listCorpProcessedKM != null && !listCorpProcessedKM.includes(killID)) {
+    if (listCorpProcessedKM == null || listCorpProcessedKM != null && !listCorpProcessedKM.includes(killID)) {
         const filter = {
             _year: year,
             _month: month,
             _corpid: corpId
         };
         const update = {
+	    lastUpdate: new Date(),
             $inc: {
                 lossCount: 1,
                 iskLossed: killValue,
@@ -415,6 +425,12 @@ async function addVictimToCorpStats(killID, victim, killValue, killPoints, date,
                     }
                 }
             }
+	    if (findUpdate != null && !findUpdate.completed && !findUpdate.isNPC) {
+	    	if (recursiveOn) {
+			console.log("we pushed corp that exist from other km processing into queue : " + corpId);
+			historicalQueue.push(corpId);
+		}
+	    }
         } catch (err) {
                 console.log(err);
                 console.error('Error in finding corp to insert victim km into!');

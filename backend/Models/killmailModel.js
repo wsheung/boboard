@@ -55,6 +55,10 @@ var corpKMSchema = mongoose.Schema({
     },
     netPoints: {
         type: Number
+    },
+    lastUpdate: {
+	type: Date, 
+	default: Date.now
     }
 }, { collection: 'killmails' });
 
