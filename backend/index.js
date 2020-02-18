@@ -96,7 +96,7 @@ async function getRealTimeKM() {
 
     var km = await fetchKMFromRedisQ();
 
-    while (km.package != null && kmBatch.length < 50) { // throttle it by increments of 50 WH km each time
+    while (km.package != null) {
         if (km.package.killmail.solar_system_id.toString().startsWith("3100")) {
             //wormhole systemid starts with 3100XXXX
             console.log("added one new km");
@@ -117,10 +117,22 @@ async function getRealTimeKM() {
     end();
 }
 
+function remove_duplicates_safe(arr) {
+    var seen = {};
+    var ret_arr = [];
+    for (var i = 0; i < arr.length; i++) {
+        if (!(arr[i] in seen)) {
+            ret_arr.push(arr[i]);
+            seen[arr[i]] = true;
+        }
+    }
+    return ret_arr;
+}
+
 async function processGlobalHistoricalQueue() {
     console.log("starting to process historical killmails");
     console.log("size is : " + historicalQueue);
-    historicalQueue = _.union(historicalQueue, historicalQueue); // removing duplicates in case of any
+    historicalQueue = remove_duplicates_safe(historicalQueue); // removing duplicates in case of any
     console.log("new size is : " + historicalQueue);
     while (historicalQueue.length > 0) {
 	// if there are still remaining stiff in queue
